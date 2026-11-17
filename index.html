@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HEX RUNNER // MEMORY BREACH</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- PANTALLA DE INICIO -->
+  <div id="menu-inicio" class="panel-cyber">
+    <h1 class="titulo-neon">HEX RUNNER</h1>
+    <p class="subtitulo">// PROTOCOLO DE EXTRACCIÓN DE MEMORIA</p>
+
+    <div class="grupo-input">
+      <label for="input-alias">ID DE RUNNER:</label>
+      <input type="text" id="input-alias" placeholder="HEX_01" maxlength="12">
+    </div>
+
+    <div class="grupo-input">
+      <label for="select-diff">NIVEL DE SEGURIDAD:</label>
+      <select id="select-diff">
+        <option value="facil">BAJO (ANTIVIRUS LENTOS)</option>
+        <option value="medio" selected>ESTÁNDAR (RASTREO ACTIVO)</option>
+        <option value="dificil">CRÍTICO (FIREWALL AGRESIVO)</option>
+      </select>
+    </div>
+
+    <button id="btn-start" class="btn-neon">[ INICIAR EJECUCIÓN ]</button>
+  </div>
+
+  <!-- ESCENARIO DE JUEGO -->
+  <div id="escenario-juego" class="oculto">
+    <div class="hud-superior">
+      <div class="hud-dato">
+        <span class="etiqueta">BLOQUE HEX</span>
+        <span id="nivel-val" class="valor">SECTOR 1/2</span>
+      </div>
+      <div class="hud-dato">
+        <span class="etiqueta">BYTES EXTRAÍDOS</span>
+        <span id="score-val" class="valor">0000</span>
+      </div>
+      <div class="hud-dato">
+        <span class="etiqueta">INTEGRIDAD</span>
+        <span id="vidas-val" class="valor">3 LIVES</span>
+      </div>
+    </div>
+
+    <canvas id="lienzo-mainframe"></canvas>
+
+    <div class="controles-inferiores">
+      <button id="btn-pause" class="btn-sec">[ PAUSA ]</button>
+      <button id="btn-restart" class="btn-sec">[ REINICIAR ]</button>
+      <button id="btn-menu" class="btn-sec">[ DESCONECTAR ]</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
