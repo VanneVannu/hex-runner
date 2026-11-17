@@ -369,3 +369,105 @@ function verificarColisiones() {
         score += 200;
         sonidoEliminarAntivirus();
         av.x = 9 * TILE_SIZE;
+        av.y = 7 * TILE_SIZE;
+      } else {
+        vidas--;
+        if (vidas <= 0) {
+          isGameOver = true;
+          alert(`SISTEMA BLOQUEADO // GAME OVER\nPUNTUACIÓN: ${score}`);
+          volverAlMenu();
+          return;
+        }
+        reiniciarPosiciones(av.speed);
+        break;
+      }
+    }
+  }
+}
+
+function renderizar() {
+  ctx.fillStyle = '#020617';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const val = gridActual[r][c];
+      const x = c * TILE_SIZE;
+      const y = r * TILE_SIZE;
+
+      if (val === 1) {
+        ctx.fillStyle = '#064e3b';
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        ctx.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+      } else if (val === 2) {
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, 3, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (val === 3) {
+        const pulso = Math.sin(Date.now() * 0.01) * 2 + 7;
+        ctx.fillStyle = '#ef4444';
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, pulso, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+  }
+
+  // Jugador
+  ctx.fillStyle = zeroDayTimer > 0 ? '#34d399' : '#f8fafc';
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(player.x + TILE_SIZE / 2, player.y + TILE_SIZE / 2, TILE_SIZE / 2 - 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Antivirus
+  for (let av of antivirus) {
+    const esVulnerable = zeroDayTimer > 0;
+    ctx.fillStyle = esVulnerable ? '#38bdf8' : av.color;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 10;
+
+    ctx.beginPath();
+    ctx.arc(av.x + TILE_SIZE / 2, av.y + TILE_SIZE / 2 - 2, TILE_SIZE / 2 - 4, Math.PI, 0);
+    ctx.lineTo(av.x + TILE_SIZE - 4, av.y + TILE_SIZE - 4);
+    ctx.lineTo(av.x + 4, av.y + TILE_SIZE - 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(av.x + 8, av.y + 10, 4, 4);
+    ctx.fillRect(av.x + 17, av.y + 10, 4, 4);
+  }
+}
+
+function actualizarHUD() {
+  document.getElementById('nivel-val').innerText = `SECTOR ${nivelActual}/${mapasBase.length}`;
+  document.getElementById('score-val').innerText = score.toString().padStart(4, '0');
+  document.getElementById('vidas-val').innerText = `${vidas} LIVES`;
+}
+
+function volverAlMenu() {
+  clearInterval(gameLoop);
+  document.getElementById('escenario-juego').classList.add('oculto');
+  document.getElementById('menu-inicio').classList.remove('oculto');
+}
+
+window.onload = () => {
+  document.getElementById('btn-start').addEventListener('click', iniciarJuego);
+  document.getElementById('btn-pause').addEventListener('click', (e) => {
+    e.target.blur();
+    isPaused = !isPaused;
+    document.getElementById('btn-pause').innerText = isPaused ? '[ REANUDAR ]' : '[ PAUSA ]';
+  });
+  document.getElementById('btn-restart').addEventListener('click', iniciarJuego);
+  document.getElementById('btn-menu').addEventListener('click', volverAlMenu);
+};
