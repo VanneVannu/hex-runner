@@ -1,5 +1,5 @@
 /* ===================================================
-   NETWORK INFILTRATOR // MOTOR ARCADE + IA + AUDIO
+   HEX RUNNER // MOTOR ARCADE + IA + AUDIO (CORREGIDO)
    =================================================== */
 
 const canvas = document.getElementById('lienzo-mainframe');
@@ -12,14 +12,14 @@ const ROWS = 18;
 canvas.width = COLS * TILE_SIZE;  // 600px
 canvas.height = ROWS * TILE_SIZE; // 540px
 
-// Estado general
 let gameLoop = null;
 let isPaused = false;
 let isGameOver = false;
 let score = 0;
 let vidas = 3;
 let nivelActual = 1;
-let zeroDayTimer = 0; // Tiempo activo de vulnerabilidad
+let zeroDayTimer = 0;
+let velocidadEnemigoActual = 2.0;
 
 // 1 = Muro PCB, 0 = Camino vacío, 2 = Bit, 3 = Zero-Day Exploit, 4 = Portal lateral
 const mapasBase = [
@@ -38,7 +38,7 @@ const mapasBase = [
     [1,2,2,2,2,1,2,2,2,1,1,2,2,2,1,2,2,2,2,1],
     [1,2,1,1,2,1,2,1,1,1,1,1,1,2,1,2,1,1,2,1],
     [1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1],
-    [1,2,1,1,2,1,1,1,2,2,2,2,1,1,1,2,1,1,2,1],
+    [1,2,1,1,2,1,1,1,2,0,2,2,1,1,1,2,1,1,2,1], // <-- Fila 13, Col 9 libre (0)
     [1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,2,1],
     [1,3,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,3,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -59,7 +59,7 @@ const mapasBase = [
     [1,1,1,2,1,1,1,1,2,1,1,2,1,1,1,1,2,1,1,1],
     [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
     [1,2,1,1,2,1,2,1,1,1,1,1,1,2,1,2,1,1,2,1],
-    [1,2,1,1,2,1,2,2,2,1,1,2,2,2,1,2,1,1,2,1],
+    [1,2,1,1,2,1,2,2,2,0,2,2,2,1,2,1,1,2,1,1], // <-- Fila 13, Col 9 libre (0)
     [1,2,2,2,2,1,1,1,2,1,1,2,1,1,1,2,2,2,2,1],
     [1,3,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,3,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -70,10 +70,10 @@ const mapasBase = [
 let gridActual = [];
 let bitsRestantes = 0;
 
-// Jugador (Hacker Node)
+// Jugador (Nodo Hex)
 let player = {
   x: 9 * TILE_SIZE,
-  y: 12 * TILE_SIZE,
+  y: 13 * TILE_SIZE,
   vx: 0,
   vy: 0,
   nextVx: 0,
@@ -81,7 +81,6 @@ let player = {
   speed: 2.5
 };
 
-// Antivirus (Enemigos con IA)
 let antivirus = [];
 
 // ===================================================
@@ -137,10 +136,13 @@ function sonidoEliminarAntivirus() {
 // ===================================================
 function iniciarJuego() {
   iniciarAudio();
+  // Quitar foco de los botones para que las teclas no los activen
+  if (document.activeElement) document.activeElement.blur();
+
   const diff = document.getElementById('select-diff').value;
-  let velEnemy = 2.0;
-  if (diff === 'facil') velEnemy = 1.5;
-  if (diff === 'dificil') velEnemy = 2.4;
+  velocidadEnemigoActual = 2.0;
+  if (diff === 'facil') velocidadEnemigoActual = 1.5;
+  if (diff === 'dificil') velocidadEnemigoActual = 2.4;
 
   score = 0;
   vidas = 3;
@@ -148,10 +150,11 @@ function iniciarJuego() {
   isGameOver = false;
   isPaused = false;
 
+  document.getElementById('btn-pause').innerText = '[ PAUSA ]';
   document.getElementById('menu-inicio').classList.add('oculto');
   document.getElementById('escenario-juego').classList.remove('oculto');
 
-  cargarNivel(velEnemy);
+  cargarNivel(velocidadEnemigoActual);
   clearInterval(gameLoop);
   gameLoop = setInterval(actualizarJuego, 1000 / 60);
 }
@@ -174,8 +177,9 @@ function cargarNivel(velBase = 2.0) {
 }
 
 function reiniciarPosiciones(velBase = 2.0) {
+  // Posición inicial garantizada libre (Columna 9, Fila 13)
   player.x = 9 * TILE_SIZE;
-  player.y = 12 * TILE_SIZE;
+  player.y = 13 * TILE_SIZE;
   player.vx = 0;
   player.vy = 0;
   player.nextVx = 0;
@@ -194,6 +198,11 @@ function reiniciarPosiciones(velBase = 2.0) {
 // CONTROLES CON GIRO ANTICIPADO (INPUT BUFFERING)
 // ===================================================
 window.addEventListener('keydown', (e) => {
+  const teclasJuego = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'];
+  if (teclasJuego.includes(e.key)) {
+    e.preventDefault();
+  }
+
   if (isPaused || isGameOver) return;
   const s = player.speed;
 
@@ -204,7 +213,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 function puedeMoverse(x, y) {
-  const margen = 4; // Margen ligeramente más holgado para pasillos de 30px
+  const margen = 4;
   const esquinas = [
     { c: Math.floor((x + margen) / TILE_SIZE), r: Math.floor((y + margen) / TILE_SIZE) },
     { c: Math.floor((x + TILE_SIZE - margen) / TILE_SIZE), r: Math.floor((y + margen) / TILE_SIZE) },
@@ -214,7 +223,7 @@ function puedeMoverse(x, y) {
 
   for (let p of esquinas) {
     if (p.r < 0 || p.r >= ROWS) return false;
-    if (p.c < 0 || p.c >= COLS) continue; // Permitir portales laterales
+    if (p.c < 0 || p.c >= COLS) continue; // Portales laterales
     if (gridActual[p.r][p.c] === 1) return false;
   }
   return true;
@@ -228,17 +237,15 @@ function actualizarJuego() {
 
   if (zeroDayTimer > 0) zeroDayTimer--;
 
-  // Intentar aplicar giro anticipado con asistencia de esquina (Corner Snapping)
+  // Asistencia de esquina (Corner Snapping)
   if (player.nextVx !== 0 || player.nextVy !== 0) {
     let testX = player.x;
     let testY = player.y;
 
-    // Si quiere moverse verticalmente, alinear X al centro de la columna cercana
     if (player.nextVy !== 0) {
       const colCercana = Math.round(player.x / TILE_SIZE) * TILE_SIZE;
       if (Math.abs(player.x - colCercana) <= 8) testX = colCercana;
     }
-    // Si quiere moverse horizontalmente, alinear Y al centro de la fila cercana
     if (player.nextVx !== 0) {
       const filaCercana = Math.round(player.y / TILE_SIZE) * TILE_SIZE;
       if (Math.abs(player.y - filaCercana) <= 8) testY = filaCercana;
@@ -257,12 +264,11 @@ function actualizarJuego() {
     player.x += player.vx;
     player.y += player.vy;
   } else {
-    // Alinear al borde exacto si choca de frente contra un muro
     player.x = Math.round(player.x / TILE_SIZE) * TILE_SIZE;
     player.y = Math.round(player.y / TILE_SIZE) * TILE_SIZE;
   }
 
-  // Portales laterales (túnel de datos)
+  // Portales laterales
   if (player.x < -TILE_SIZE / 2) player.x = canvas.width - TILE_SIZE / 2;
   if (player.x > canvas.width - TILE_SIZE / 2) player.x = -TILE_SIZE / 2;
 
@@ -281,12 +287,12 @@ function actualizarJuego() {
       gridActual[row][col] = 0;
       score += 50;
       bitsRestantes--;
-      zeroDayTimer = 420; // 7 segundos de modo Zero-Day
+      zeroDayTimer = 420;
       sonidoBit(true);
     }
   }
 
-  // Avanzar de nivel si se extraen todos los bits
+  // Avanzar de nivel
   if (bitsRestantes <= 0) {
     nivelActual++;
     if (nivelActual > mapasBase.length) {
@@ -295,7 +301,7 @@ function actualizarJuego() {
       volverAlMenu();
       return;
     }
-    cargarNivel(2.2);
+    cargarNivel(velocidadEnemigoActual + 0.2);
   }
 
   moverAntivirus();
@@ -318,7 +324,6 @@ function moverAntivirus() {
   for (let av of antivirus) {
     const velActual = zeroDayTimer > 0 ? av.speed * 0.6 : av.speed;
 
-    // Evaluar cambio de dirección solo en intersecciones o al chocar
     const alineadoX = Math.abs(av.x % TILE_SIZE) < velActual;
     const alineadoY = Math.abs(av.y % TILE_SIZE) < velActual;
 
@@ -328,12 +333,10 @@ function moverAntivirus() {
         av.y = Math.round(av.y / TILE_SIZE) * TILE_SIZE;
       }
 
-      // Calcular objetivo según personalidad del antivirus
       let targetX = player.x;
       let targetY = player.y;
 
       if (zeroDayTimer > 0) {
-        // Huir del jugador
         targetX = canvas.width - player.x;
         targetY = canvas.height - player.y;
       } else if (av.tipo === 'emboscada') {
@@ -348,7 +351,6 @@ function moverAntivirus() {
       let mejorDist = Infinity;
 
       for (let d of dirs) {
-        // Evitar dar media vuelta brusca si hay otras salidas
         if (d.vx * velActual === -av.vx && d.vy * velActual === -av.vy) continue;
 
         const testX = av.x + d.vx * velActual;
@@ -369,7 +371,6 @@ function moverAntivirus() {
         av.vx = mejorDir.vx * velActual;
         av.vy = mejorDir.vy * velActual;
       } else {
-        // Callejón sin salida: invertir dirección
         av.vx = -av.vx;
         av.vy = -av.vy;
       }
@@ -388,13 +389,11 @@ function verificarColisiones() {
     const dist = Math.hypot(player.x - av.x, player.y - av.y);
     if (dist < TILE_SIZE * 0.7) {
       if (zeroDayTimer > 0) {
-        // Devorar Antivirus
         score += 200;
         sonidoEliminarAntivirus();
         av.x = 9 * TILE_SIZE;
         av.y = 7 * TILE_SIZE;
       } else {
-        // Daño al jugador
         vidas--;
         if (vidas <= 0) {
           isGameOver = true;
@@ -416,7 +415,6 @@ function renderizar() {
   ctx.fillStyle = '#020617';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Dibujar Laberinto y Bits
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const val = gridActual[r][c];
@@ -435,7 +433,6 @@ function renderizar() {
         ctx.arc(x + TILE_SIZE / 2, y + TILE_SIZE / 2, 3, 0, Math.PI * 2);
         ctx.fill();
       } else if (val === 3) {
-        // Zero-Day Exploit parpadeante
         const pulso = Math.sin(Date.now() * 0.01) * 2 + 7;
         ctx.fillStyle = '#ef4444';
         ctx.shadowColor = '#ef4444';
@@ -448,7 +445,7 @@ function renderizar() {
     }
   }
 
-  // Dibujar Jugador (Nodo Hex)
+  // Jugador
   ctx.fillStyle = zeroDayTimer > 0 ? '#34d399' : '#f8fafc';
   ctx.shadowColor = ctx.fillStyle;
   ctx.shadowBlur = 12;
@@ -457,7 +454,7 @@ function renderizar() {
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  // Dibujar Antivirus
+  // Antivirus
   for (let av of antivirus) {
     const esVulnerable = zeroDayTimer > 0;
     ctx.fillStyle = esVulnerable ? '#38bdf8' : av.color;
@@ -472,7 +469,6 @@ function renderizar() {
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Ojos digitales
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(av.x + 8, av.y + 10, 4, 4);
     ctx.fillRect(av.x + 17, av.y + 10, 4, 4);
@@ -491,10 +487,10 @@ function volverAlMenu() {
   document.getElementById('menu-inicio').classList.remove('oculto');
 }
 
-// Eventos de botones
 window.onload = () => {
   document.getElementById('btn-start').addEventListener('click', iniciarJuego);
-  document.getElementById('btn-pause').addEventListener('click', () => {
+  document.getElementById('btn-pause').addEventListener('click', (e) => {
+    e.target.blur();
     isPaused = !isPaused;
     document.getElementById('btn-pause').innerText = isPaused ? '[ REANUDAR ]' : '[ PAUSA ]';
   });
