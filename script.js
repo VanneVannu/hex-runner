@@ -1,5 +1,5 @@
 /* ===================================================
-   HEX RUNNER // MOTOR ARCADE + IA + AUDIO (CORREGIDO)
+   HEX RUNNER // MOTOR ARCADE + IA + AUDIO (SECTOR 2 CORREGIDO)
    =================================================== */
 
 const canvas = document.getElementById('lienzo-mainframe');
@@ -38,30 +38,30 @@ const mapasBase = [
     [1,2,2,2,2,1,2,2,2,1,1,2,2,2,1,2,2,2,2,1],
     [1,2,1,1,2,1,2,1,1,1,1,1,1,2,1,2,1,1,2,1],
     [1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1],
-    [1,2,1,1,2,1,1,1,2,0,2,2,1,1,1,2,1,1,2,1], // <-- Fila 13, Col 9 libre (0)
+    [1,2,1,1,2,1,1,1,2,0,2,2,1,1,1,2,1,1,2,1],
     [1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,2,1],
     [1,3,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,3,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
   ],
-  // SECTOR 2
+  // SECTOR 2 (Corregido sin celdas aisladas)
   [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,3,2,2,2,1,2,2,2,2,2,2,2,2,1,2,2,2,3,1],
-    [1,2,1,1,2,1,2,1,1,1,1,1,1,2,1,2,1,1,2,1],
-    [1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1],
-    [1,1,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,1,1],
-    [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-    [1,2,1,1,1,1,2,1,1,0,0,1,1,2,1,1,1,1,2,1],
-    [4,0,0,0,0,0,2,1,0,0,0,0,1,2,0,0,0,0,0,4],
-    [1,2,1,1,1,1,2,1,1,1,1,1,1,2,1,1,1,1,2,1],
-    [1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1],
-    [1,1,1,2,1,1,1,1,2,1,1,2,1,1,1,1,2,1,1,1],
+    [1,3,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,3,1],
+    [1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,2,1],
     [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
     [1,2,1,1,2,1,2,1,1,1,1,1,1,2,1,2,1,1,2,1],
-    [1,2,1,1,2,1,2,2,2,0,2,2,2,1,2,1,1,2,1,1], // <-- Fila 13, Col 9 libre (0)
-    [1,2,2,2,2,1,1,1,2,1,1,2,1,1,1,2,2,2,2,1],
-    [1,3,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,3,1],
+    [1,2,2,2,2,1,2,2,2,1,1,2,2,2,1,2,2,2,2,1],
+    [1,1,1,1,2,1,1,1,0,0,0,0,1,1,1,2,1,1,1,1],
+    [4,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,0,4],
+    [1,1,1,1,2,1,1,1,0,0,0,0,1,1,1,2,1,1,1,1],
+    [1,2,2,2,2,1,2,2,2,1,1,2,2,2,1,2,2,2,2,1],
+    [1,2,1,1,2,1,2,1,1,1,1,1,1,2,1,2,1,1,2,1],
+    [1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1],
+    [1,2,1,1,2,1,1,1,2,2,2,2,1,1,1,2,1,1,2,1],
+    [1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,2,1],
+    [1,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1],
+    [1,3,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,3,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
   ]
@@ -70,7 +70,6 @@ const mapasBase = [
 let gridActual = [];
 let bitsRestantes = 0;
 
-// Jugador (Nodo Hex)
 let player = {
   x: 9 * TILE_SIZE,
   y: 13 * TILE_SIZE,
@@ -83,9 +82,6 @@ let player = {
 
 let antivirus = [];
 
-// ===================================================
-// SISTEMA DE AUDIO PROCEDURAL (WEB AUDIO API)
-// ===================================================
 let audioCtx = null;
 
 function iniciarAudio() {
@@ -131,12 +127,8 @@ function sonidoEliminarAntivirus() {
   osc.stop(audioCtx.currentTime + 0.25);
 }
 
-// ===================================================
-// INICIALIZACIÓN Y NIVELES
-// ===================================================
 function iniciarJuego() {
   iniciarAudio();
-  // Quitar foco de los botones para que las teclas no los activen
   if (document.activeElement) document.activeElement.blur();
 
   const diff = document.getElementById('select-diff').value;
@@ -177,7 +169,6 @@ function cargarNivel(velBase = 2.0) {
 }
 
 function reiniciarPosiciones(velBase = 2.0) {
-  // Posición inicial garantizada libre (Columna 9, Fila 13)
   player.x = 9 * TILE_SIZE;
   player.y = 13 * TILE_SIZE;
   player.vx = 0;
@@ -194,9 +185,6 @@ function reiniciarPosiciones(velBase = 2.0) {
   ];
 }
 
-// ===================================================
-// CONTROLES CON GIRO ANTICIPADO (INPUT BUFFERING)
-// ===================================================
 window.addEventListener('keydown', (e) => {
   const teclasJuego = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'];
   if (teclasJuego.includes(e.key)) {
@@ -223,21 +211,17 @@ function puedeMoverse(x, y) {
 
   for (let p of esquinas) {
     if (p.r < 0 || p.r >= ROWS) return false;
-    if (p.c < 0 || p.c >= COLS) continue; // Portales laterales
+    if (p.c < 0 || p.c >= COLS) continue;
     if (gridActual[p.r][p.c] === 1) return false;
   }
   return true;
 }
 
-// ===================================================
-// BUCLE PRINCIPAL Y LÓGICA
-// ===================================================
 function actualizarJuego() {
   if (isPaused || isGameOver) return;
 
   if (zeroDayTimer > 0) zeroDayTimer--;
 
-  // Asistencia de esquina (Corner Snapping)
   if (player.nextVx !== 0 || player.nextVy !== 0) {
     let testX = player.x;
     let testY = player.y;
@@ -259,7 +243,6 @@ function actualizarJuego() {
     }
   }
 
-  // Mover jugador
   if (puedeMoverse(player.x + player.vx, player.y + player.vy)) {
     player.x += player.vx;
     player.y += player.vy;
@@ -268,11 +251,9 @@ function actualizarJuego() {
     player.y = Math.round(player.y / TILE_SIZE) * TILE_SIZE;
   }
 
-  // Portales laterales
   if (player.x < -TILE_SIZE / 2) player.x = canvas.width - TILE_SIZE / 2;
   if (player.x > canvas.width - TILE_SIZE / 2) player.x = -TILE_SIZE / 2;
 
-  // Recolección de Bits y Zero-Day
   const col = Math.floor((player.x + TILE_SIZE / 2) / TILE_SIZE);
   const row = Math.floor((player.y + TILE_SIZE / 2) / TILE_SIZE);
 
@@ -292,7 +273,6 @@ function actualizarJuego() {
     }
   }
 
-  // Avanzar de nivel
   if (bitsRestantes <= 0) {
     nivelActual++;
     if (nivelActual > mapasBase.length) {
@@ -310,9 +290,6 @@ function actualizarJuego() {
   renderizar();
 }
 
-// ===================================================
-// INTELIGENCIA ARTIFICIAL DE RASTREO DE ANTIVIRUS
-// ===================================================
 function moverAntivirus() {
   const dirs = [
     { vx: 0, vy: -1 },
@@ -408,9 +385,6 @@ function verificarColisiones() {
   }
 }
 
-// ===================================================
-// RENDERIZADO NEÓN EN CANVAS
-// ===================================================
 function renderizar() {
   ctx.fillStyle = '#020617';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
