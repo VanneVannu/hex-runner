@@ -204,7 +204,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 function puedeMoverse(x, y) {
-  const margen = 2;
+  const margen = 4; // Margen ligeramente más holgado para pasillos de 30px
   const esquinas = [
     { c: Math.floor((x + margen) / TILE_SIZE), r: Math.floor((y + margen) / TILE_SIZE) },
     { c: Math.floor((x + TILE_SIZE - margen) / TILE_SIZE), r: Math.floor((y + margen) / TILE_SIZE) },
@@ -228,9 +228,25 @@ function actualizarJuego() {
 
   if (zeroDayTimer > 0) zeroDayTimer--;
 
-  // Intentar aplicar giro anticipado si está alineado a la cuadrícula
+  // Intentar aplicar giro anticipado con asistencia de esquina (Corner Snapping)
   if (player.nextVx !== 0 || player.nextVy !== 0) {
-    if (puedeMoverse(player.x + player.nextVx, player.y + player.nextVy)) {
+    let testX = player.x;
+    let testY = player.y;
+
+    // Si quiere moverse verticalmente, alinear X al centro de la columna cercana
+    if (player.nextVy !== 0) {
+      const colCercana = Math.round(player.x / TILE_SIZE) * TILE_SIZE;
+      if (Math.abs(player.x - colCercana) <= 8) testX = colCercana;
+    }
+    // Si quiere moverse horizontalmente, alinear Y al centro de la fila cercana
+    if (player.nextVx !== 0) {
+      const filaCercana = Math.round(player.y / TILE_SIZE) * TILE_SIZE;
+      if (Math.abs(player.y - filaCercana) <= 8) testY = filaCercana;
+    }
+
+    if (puedeMoverse(testX + player.nextVx, testY + player.nextVy)) {
+      player.x = testX;
+      player.y = testY;
       player.vx = player.nextVx;
       player.vy = player.nextVy;
     }
@@ -240,6 +256,10 @@ function actualizarJuego() {
   if (puedeMoverse(player.x + player.vx, player.y + player.vy)) {
     player.x += player.vx;
     player.y += player.vy;
+  } else {
+    // Alinear al borde exacto si choca de frente contra un muro
+    player.x = Math.round(player.x / TILE_SIZE) * TILE_SIZE;
+    player.y = Math.round(player.y / TILE_SIZE) * TILE_SIZE;
   }
 
   // Portales laterales (túnel de datos)
